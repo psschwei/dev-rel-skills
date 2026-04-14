@@ -17,8 +17,9 @@ Each skill lives in `skills/<skill-name>/SKILL.md`. Skills are designed to work 
 5. `/write-tweet` — Generates tweet threads with proven opening formulas and per-announcement-type content rules
 6. `/de-llmify` — Edits writing to remove LLM-generated text patterns before publishing
 7. `/validate-snippets` — Extracts fenced code blocks from writing, executes each, and reports pass/fail/skip results
+8. `/link-preview` — Generates a link preview snippet (markdown card with code snippet, Open Graph tags, Twitter Card) for a finished post or external URL
 
-Skills can be used independently but typically flow sequentially: scout → discover → draft → validate → promote.
+Skills can be used independently but typically flow sequentially: scout → discover → draft → validate → preview → promote.
 
 ## External Dependency
 
@@ -32,6 +33,7 @@ Skills write their output to the working directory:
 - Feature blog posts → `blog-<slug>.md`
 - Tweet threads → `tweet-<slug>.md`
 - Snippet validation reports → `snippet-report-<slug>.md`
+- Link preview snippets → `link-preview-<slug>.md`
 
 See `demos/` for real examples of each output type.
 

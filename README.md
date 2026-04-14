@@ -60,6 +60,14 @@ Edits a piece of writing to remove patterns commonly associated with LLM-generat
 /de-llmify [path/to/file.md or inline text]
 ```
 
+### `/link-preview`
+
+Generates a link preview snippet for a post — markdown link card (with an eye-catching code snippet), Open Graph meta tags, and Twitter Card block. Takes a local markdown file or a URL, extracts the title, description, author, date, hero image, and the most compelling fenced code block from the post, and produces ready-to-paste snippets for embedding elsewhere. Writes output to `link-preview-<slug>.md`.
+
+```
+/link-preview [path/to/post.md or URL]
+```
+
 ## Setup
 
 Run the install script to symlink all skills into `~/.claude/skills/`:
@@ -79,4 +87,5 @@ A typical dev-rel workflow using these skills:
 3. **Draft content** — use `/release-blog` for release summaries or `/write-technical-blog` for deep dives on a single feature
 4. **Validate** — run `/validate-snippets` on the draft to make sure all code examples actually work
 5. **Polish** — run `/de-llmify` on any generated content to remove AI writing tells before publishing
-6. **Promote** — run `/write-tweet` on the resulting blog post file to generate a thread that drives readers to it
+6. **Preview** — run `/link-preview` on the finished post to produce a link card and OG meta tags that make other posts want to link back
+7. **Promote** — run `/write-tweet` on the resulting blog post file to generate a thread that drives readers to it
