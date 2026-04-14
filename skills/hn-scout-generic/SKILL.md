@@ -42,6 +42,38 @@ gh repo view --json nameWithOwner -q .nameWithOwner
 
 If that fails, ask the user for `owner/repo`.
 
+**First, check for a hand-tuned profile file** at
+`.claude/hn-scout-profile.md` in the target repo. This file (if present) is
+maintained by the project and carries higher-quality capability bullets and
+a custom fit rubric that the project has tuned by hand.
+
+If running inside a local checkout of the target repo, check the working
+directory first:
+
+```bash
+test -f .claude/hn-scout-profile.md && cat .claude/hn-scout-profile.md
+```
+
+Otherwise (or if the local file is missing), try to fetch it from the
+remote:
+
+```bash
+gh api "repos/OWNER/REPO/contents/.claude/hn-scout-profile.md" \
+  --jq .content 2>/dev/null | base64 -d
+```
+
+**If a profile file is found:**
+
+- Use its capability bullets directly as the capabilities profile — do not
+  paraphrase or "improve" them.
+- If the profile file defines a custom fit rubric (a point table scoped to
+  this project's sweet spot), use that rubric verbatim in Step 5 in place of
+  the generic fit rubric. Record in the output that a hand-tuned rubric was
+  used.
+- Skip the README inference below.
+
+**If no profile file is found**, fall back to README inference.
+
 Fetch the README and repo metadata:
 
 ```bash
@@ -63,7 +95,9 @@ Primary use cases: <2-4 scenarios the README emphasizes>
 
 Be faithful to the README — do not invent capabilities. If the README is
 thin (< 200 words) or missing, ask the user for a one-paragraph project
-description before continuing.
+description before continuing. In that case, also suggest the user create a
+`.claude/hn-scout-profile.md` file to get higher-quality fit scoring on
+future runs.
 
 Keep this profile in memory for all subsequent scoring.
 
@@ -132,9 +166,13 @@ Score each post on two axes:
 
 #### Fit score (0-50): How naturally does the project apply?
 
-Evaluate each post against the capabilities profile. A post scores high on
-fit when **at least one of the project's key capabilities or integrations
-directly addresses something the post is about**.
+**If the profile file from Step 1 defined a custom fit rubric, use that
+rubric verbatim and skip the generic table below.** A hand-tuned rubric
+reflects the project's actual sweet spot better than generic heuristics.
+
+Otherwise, evaluate each post against the capabilities profile. A post
+scores high on fit when **at least one of the project's key capabilities or
+integrations directly addresses something the post is about**.
 
 | Signal | Points |
 |--------|--------|
@@ -192,6 +230,8 @@ directory.
 # HN Scout Report — YYYY-MM-DD
 
 > Project: <name> (OWNER/REPO)
+> Profile source: <`.claude/hn-scout-profile.md` | README inference>
+> Rubric: <hand-tuned (from profile) | generic>
 > Scanned top {N} Hacker News stories. Found {X} AI-relevant posts.
 > Generated {Y} demo opportunities.
 
@@ -268,6 +308,58 @@ capability from the profile genuinely applied.}
 - **Think like a developer, not a marketer.** The content angle should be
   genuinely useful or interesting, not "look at our product." The best
   bandwagon content teaches something while naturally showcasing the tool.
+
+---
+
+## Profile File Format
+
+Projects that want higher-quality fit scoring can commit a
+`.claude/hn-scout-profile.md` file to their repo. When present, it
+overrides README-based inference.
+
+A profile file has two sections:
+
+### 1. Capabilities
+
+A short, hand-curated description of what the project is and what it does
+well. Use the same shape as the README-inferred profile:
+
+```markdown
+## Capabilities
+
+Project: <name>
+One-liner: <what it does in one sentence>
+Primary language: <language>
+Key capabilities:
+- <capability 1>
+- <capability 2>
+- ...
+Integrations: <libraries, providers, frameworks>
+Primary use cases:
+- <use case 1>
+- <use case 2>
+```
+
+### 2. Fit rubric (optional)
+
+A custom point table that replaces the generic fit rubric in Step 5. Use
+this when the project has a well-understood sweet spot that generic
+heuristics would mis-score.
+
+```markdown
+## Fit rubric
+
+| Signal | Points |
+|--------|--------|
+| Post about <the project's bullseye use case> | **+50** |
+| Post about <strong adjacent use case> | **+40** |
+| Post about <a provider/tool we already integrate with> | **+35** |
+| Post about <adjacent pattern we could support> | **+15** |
+| Post about AI but far from sweet spot | **+5** |
+```
+
+Keep each signal concrete (name specific patterns, providers, or use cases
+— not vague categories). Take the highest applicable signal; don't stack.
 
 ---
 
