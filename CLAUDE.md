@@ -10,7 +10,8 @@ A collection of Claude Code agent skills for developer relations work. Skills ar
 
 Each skill lives in `skills/<skill-name>/SKILL.md`. Skills are designed to work as a pipeline:
 
-1. `/hn-scout` — Scans Hacker News front page for AI-related posts, scores each for mellea integration potential, and generates concrete demo ideas
+1a. `/hn-scout` — Scans Hacker News front page for AI-related posts, scores each for mellea integration potential, and generates concrete demo ideas
+1b. `/hn-scout-generic` — Same as `/hn-scout`, but infers the target project's capabilities from its README at runtime, so it works for any repo.
 2. `/get-blog-candidates` — Fetches merged PRs from `generative-computing/mellea`, scores each by blog potential, and outputs a ranked table
 3. `/release-blog` — Drafts a full release post from the latest GitHub release, scoring PRs into Highlight (≥50), Mention (10–49), and Skip (<10) tiers
 4. `/write-technical-blog` — Deep-dive post guide drawing on best practices from Stripe, GitHub, Cloudflare, HashiCorp, and Google engineering blogs
@@ -21,9 +22,21 @@ Each skill lives in `skills/<skill-name>/SKILL.md`. Skills are designed to work 
 
 Skills can be used independently but typically flow sequentially: scout → discover → draft → validate → preview → promote.
 
+## Target Repo Resolution
+
+Skills that interact with GitHub resolve the target repo in this order:
+
+1. An explicit `--repo owner/repo` flag on the invocation.
+2. Auto-detection from the current working directory's git remote
+   (`gh repo view --json nameWithOwner -q .nameWithOwner`).
+3. If both fail, the skill asks the user.
+
+This means running any of these skills inside a cloned repo "just works" —
+no configuration needed.
+
 ## External Dependency
 
-All skills that fetch GitHub data rely on the `gh` CLI being installed and authenticated. Skills use `gh pr list`, `gh pr view`, `gh release view`, and `gh api`. The `/hn-scout` skill uses the public Hacker News Firebase API (`hacker-news.firebaseio.com`) and WebFetch for reading linked articles.
+All skills that fetch GitHub data rely on the `gh` CLI being installed and authenticated. Skills use `gh pr list`, `gh pr view`, `gh release view`, and `gh api`. The `/hn-scout` and `/hn-scout-generic` skills use the public Hacker News Firebase API (`hacker-news.firebaseio.com`) and WebFetch for reading linked articles.
 
 ## Output Files
 
@@ -39,4 +52,13 @@ See `demos/` for real examples of each output type.
 
 ## Adding or Modifying Skills
 
-When editing SKILL.md files, the default target repo is `generative-computing/mellea`. Update the repo reference in the relevant SKILL.md if repurposing a skill for a different project.
+Most skills are repo-agnostic and auto-detect the target repo from the
+working directory (see "Target Repo Resolution" above). The one exception is
+`/hn-scout`, which bakes in mellea's capabilities for high-quality fit
+scoring; the generic equivalent is `/hn-scout-generic`, which reads
+capabilities from the target repo's README at runtime.
+
+When adding new skills, prefer the auto-detect pattern over hardcoding a
+repo. Keep project-specific scoring rubrics parameterized (or gated behind
+a `-<project>` suffix in the skill name) so the skill can be reused across
+repos.

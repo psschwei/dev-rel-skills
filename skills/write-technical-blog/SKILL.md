@@ -19,9 +19,21 @@ developers.
 /write-technical-blog [topic or PR number or description]
 ```
 
-If given a PR number, fetch its title, description, and changed files first
-(`gh pr view <number> --repo generative-computing/mellea`), then apply the
-framework below.
+If given a PR number, fetch its title, description, and changed files first.
+Determine the target repo in this order:
+
+1. Use `--repo owner/repo` if the user supplied one.
+2. Otherwise auto-detect from the current working directory:
+   `gh repo view --json nameWithOwner -q .nameWithOwner`.
+3. If auto-detection fails, ask the user.
+
+Then run:
+
+```bash
+gh pr view <number> --repo OWNER/REPO
+```
+
+and apply the framework below.
 
 ---
 

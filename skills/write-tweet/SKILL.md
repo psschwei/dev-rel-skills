@@ -20,9 +20,12 @@ engagement on Twitter/X.
 
 ### Input types
 
-**PR number** — fetch context first:
+**PR number** — fetch context first. Auto-detect the repo from the working
+directory (`gh repo view --json nameWithOwner -q .nameWithOwner`), or use
+`--repo owner/repo` if provided:
+
 ```bash
-gh pr view <number> --repo generative-computing/mellea
+gh pr view <number> --repo OWNER/REPO
 ```
 
 **Markdown file (blog post)** — read the file, then extract:
