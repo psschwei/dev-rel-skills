@@ -1,23 +1,30 @@
 #!/usr/bin/env bash
-# Creates symlinks in ~/.claude/skills/ for each skill directory in skills/
+# Copies skill directories into the skill dirs for Claude and Codex,
+# overwriting existing copies so they stay in sync with this repo.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILLS_SRC="$SCRIPT_DIR/skills"
-SKILLS_DST="$HOME/.claude/skills"
+DESTINATIONS=(
+  "$HOME/.claude/skills"
+  "$HOME/.codex/skills"
+)
 
-mkdir -p "$SKILLS_DST"
+for dst in "${DESTINATIONS[@]}"; do
+  echo "Installing skills to: $dst"
+  mkdir -p "$dst"
 
-for dir in "$SKILLS_SRC"/*/; do
-  name="$(basename "$dir")"
-  target="$SKILLS_DST/$name"
-  if [ -L "$target" ]; then
-    echo "updating: $name"
-    rm "$target"
-  elif [ -e "$target" ]; then
-    echo "skipping: $name (non-symlink already exists)"
-    continue
-  else
-    echo "linking:  $name"
-  fi
-  ln -s "$dir" "$target"
+  for dir in "$SKILLS_SRC"/*/; do
+    name="$(basename "$dir")"
+    target="$dst/$name"
+    if [ -e "$target" ] || [ -L "$target" ]; then
+      echo "  updating: $name"
+      # Remove the existing copy (or leftover symlink from the old install
+      # method) first, so files deleted from the repo's skill don't linger
+      # in the installed copy and symlinks get replaced with real copies.
+      rm -rf "$target"
+    else
+      echo "  copying:  $name"
+    fi
+    cp -R "$dir" "$target"
+  done
 done

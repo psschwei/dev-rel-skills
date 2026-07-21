@@ -80,13 +80,13 @@ Generates a link preview snippet for a post — markdown link card (with an eye-
 
 ## Setup
 
-Run the install script to symlink all skills into `~/.claude/skills/`:
+Run the install script to copy all skills into your skill directories:
 
 ```bash
 ./install-skills.sh
 ```
 
-This creates a symlink in `~/.claude/skills/` for each skill directory in `skills/`. Existing symlinks are updated; non-symlink conflicts are skipped.
+This copies each skill directory in `skills/` into `~/.claude/skills/` and `~/.codex/skills/`. Existing copies are overwritten so they stay in sync with this repo (this also replaces any leftover symlinks from the old install method). Because the skills are copied rather than symlinked, re-run the script after editing a skill to update the installed copies.
 
 ## Workflow
 
